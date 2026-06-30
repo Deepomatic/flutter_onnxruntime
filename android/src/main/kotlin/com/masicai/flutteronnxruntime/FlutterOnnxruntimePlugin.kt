@@ -288,8 +288,12 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 ortSessionOptions.addTensorrt(OrtTensorRTProviderOptions(deviceId))
                             }
                             "XNNPACK" -> {
-                                // use an empty map as the parameter
-                                ortSessionOptions.addXnnpack(mapOf())
+                                // Disable ORT intra-op spinning to avoid threadpool contention with XNNPACK's internal threadpool
+                                // https://onnxruntime.ai/docs/execution-providers/Xnnpack-ExecutionProvider.html#recommended-configuration
+                                ortSessionOptions.addConfigEntry("session.intra_op.allow_spinning", "0")
+                                ortSessionOptions.setIntraOpNumThreads(1)
+                                val xnnpackOpts = mapOf("intra_op_num_threads" to Runtime.getRuntime().availableProcessors().toString())
+                                ortSessionOptions.addXnnpack(xnnpackOpts)
                             }
                             else -> {
                                 result.error("INVALID_PROVIDER", "Provider $provider is not supported", null)
