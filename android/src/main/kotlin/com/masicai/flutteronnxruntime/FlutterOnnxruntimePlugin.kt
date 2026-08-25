@@ -446,28 +446,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                             // create a list of outputValue parameters
                             val outputValueParams = ArrayList<Any>()
 
-                            // Output tensor is wrapped in Optional[] for safety, unwrap the Optional if needed
-                            val outputTensor =
-                                when {
-                                    outputValue.toString().startsWith("Optional[") -> {
-                                        try {
-                                            // Try to use the get() method if available
-                                            val getMethod = outputValue.javaClass.getMethod("get")
-                                            getMethod.invoke(outputValue) as? OnnxTensor
-                                        } catch (e: Exception) {
-                                            try {
-                                                // Fallback to orElse(null) method
-                                                val orElseMethod = outputValue.javaClass.getMethod("orElse", Object::class.java)
-                                                orElseMethod.invoke(outputValue, null) as? OnnxTensor
-                                            } catch (e2: Exception) {
-                                                Log.e("ORT_ERROR", "Failed to unwrap Optional: ${e2.message}")
-                                                null
-                                            }
-                                        }
-                                    }
-                                    outputValue is OnnxTensor -> outputValue
-                                    else -> null
-                                }
+                            val outputTensor = outputValue as? OnnxTensor
 
                             if (outputTensor != null) {
                                 // add outputTensor to ortvalues
