@@ -442,7 +442,8 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
 
                         // Convert tensor outputs to Flutter-compatible types
                         for (outputName in session.outputNames) {
-                            val outputValue = ortOutputs[outputName]
+                            // Result.get(String) returns Optional<OnnxValue>; unwrap before casting.
+                            val outputValue: OnnxValue? = ortOutputs.get(outputName).orElse(null)
                             // create a list of outputValue parameters
                             val outputValueParams = ArrayList<Any>()
 
